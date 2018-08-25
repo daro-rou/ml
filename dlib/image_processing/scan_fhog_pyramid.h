@@ -10,6 +10,10 @@
 #include "../array2d.h"
 #include "object_detector.h"
 
+#include <dlib/gui_widgets.h>
+#include <dlib/image_io.h>
+#include <iostream>
+
 namespace dlib
 {
 
@@ -555,6 +559,28 @@ namespace dlib
 
     namespace impl
     {
+
+
+    template <
+        //typename pyramid_type,
+        typename image_type
+       ,typename feature_extractor_type
+        >
+    void show_image_ (
+    	 image_window& win
+        ,const image_type& img
+        ,const feature_extractor_type& fe
+		,dlib::array<array2d<float> >& feats
+
+    )
+    {
+        win.clear_overlay();
+        win.set_image(img);
+        image_window winhog(draw_fhog(feats,7));
+        std::cout<<"Press enter to continue.."<<std::endl;
+        std::cin.get();
+    }
+
         template <
             typename pyramid_type,
             typename image_type,
@@ -572,26 +598,34 @@ namespace dlib
             unsigned long max_pyramid_levels
         )
         {
+        	image_window win;
             unsigned long levels = 0;
             rectangle rect = get_rect(img);
 
             // figure out how many pyramid levels we should be using based on the image size
             pyramid_type pyr;
+			win.clear_overlay();
+            win.set_image(img);
             do
             {
                 rect = pyr.rect_down(rect);
+                win.add_overlay(rect, rgb_pixel(255,255,255));
                 ++levels;
             } while (rect.width() >= min_pyramid_layer_width && rect.height() >= min_pyramid_layer_height &&
                 levels < max_pyramid_levels);
+
+            std::cout<<"Levels: "<<levels<<" Press enter to continue"<<std::endl;
+            std::cin.get();
+
 
             if (feats.max_size() < levels)
                 feats.set_max_size(levels);
             feats.set_size(levels);
 
 
-
             // build our feature pyramid
             fe(img, feats[0], cell_size,filter_rows_padding,filter_cols_padding);
+            show_image_(win,img, fe, feats[0]);
             DLIB_ASSERT(feats[0].size() == fe.get_num_planes(), 
                 "Invalid feature extractor used with dlib::scan_fhog_pyramid.  The output does not have the \n"
                 "indicated number of planes.");
@@ -602,12 +636,15 @@ namespace dlib
                 array2d<pixel_type> temp1, temp2;
                 pyr(img, temp1);
                 fe(temp1, feats[1], cell_size,filter_rows_padding,filter_cols_padding);
+                show_image_(win,temp1, fe, feats[1]);
+
                 swap(temp1,temp2);
 
                 for (unsigned long i = 2; i < feats.size(); ++i)
                 {
                     pyr(temp2, temp1);
                     fe(temp1, feats[i], cell_size,filter_rows_padding,filter_cols_padding);
+                    show_image_(win,temp1, fe, feats[i]);
                     swap(temp1,temp2);
                 }
             }
