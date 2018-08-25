@@ -761,7 +761,7 @@ namespace dlib
                 impl_extract_fhog_features_cell_size_1(img_,hog,filter_rows_padding,filter_cols_padding);
                 return;
             }
-
+            print_matrix_as_csv csv;
             // unit vectors used to compute gradient orientation
             matrix<float,2,1> directions[9];
             directions[0] =  1.0000, 0.0000; 
@@ -773,7 +773,8 @@ namespace dlib
             directions[6] = -0.5000, 0.8660;
             directions[7] = -0.7660, 0.6428;
             directions[8] = -0.9397, 0.3420;
-
+            for (int i=0;i<9;++i)
+            	std::cout<<csv<<directions[i];
 
 
             // First we allocate memory for caching orientation histograms & their norms.

@@ -576,9 +576,12 @@ namespace dlib
     {
         win.clear_overlay();
         win.set_image(img);
+        print_matrix_as_csv csv;
         image_window winhog(draw_fhog(feats,7));
+        std::cout<<"Image size"<<img.nc()<<"x"<<img.nr()<<std::endl;
         std::cout<<"Press enter to continue.."<<std::endl;
         std::cin.get();
+
     }
 
         template <
