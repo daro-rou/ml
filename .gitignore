@@ -3,7 +3,7 @@
 *.swp
 *.o
 *.so
-build
+build*
 dist
 *.egg-info/
 
