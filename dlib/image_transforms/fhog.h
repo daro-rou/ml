@@ -13,6 +13,8 @@
 #include "interpolation.h"
 #include "../simd.h"
 
+#include "../utils/utils.h"
+
 namespace dlib
 {
 
@@ -504,6 +506,9 @@ namespace dlib
         ) 
         {
             const_image_view<image_type> img(img_);
+            utils::logFile rScript("histograms",img.nc(),img.nr());
+            //rScript<<fhog_csv<<"feature"<<feats;
+            //rScript<<r_matrix<<"img"<<img;
             // make sure requires clause is not broken
             DLIB_ASSERT( filter_rows_padding > 0 &&
                          filter_cols_padding > 0 ,
@@ -531,7 +536,11 @@ namespace dlib
             directions[7] = -0.7660, 0.6428;
             directions[8] = -0.9397, 0.3420;
 
-
+            for(int i=0;i<9;++i){
+            	std::stringstream ss_name("direction.",std::ios_base::out|std::ios_base::ate);
+            	ss_name<<"_"<<i;
+            	rScript<<utils::r_matrix<<ss_name.str()<<directions[i];
+            }
 
             if (img.nr() <= 2 || img.nc() <= 2)
             {
