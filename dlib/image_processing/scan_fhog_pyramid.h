@@ -563,8 +563,10 @@ namespace dlib
 
     class logFile{
     public:
-    	logFile (std::string filename):outfile(filename.c_str()){
+    	logFile (std::string& filename):outfile(filename.c_str()){
     	}
+       	logFile (const char* filename):outfile(filename){
+        	}
     	logFile (std::string filename_, int x, int y){
     		std::stringstream fileName(filename_,std::ios_base::out|std::ios_base::ate);
     		fileName<<"_"<<x<<"x"<<y<<".R";
@@ -583,9 +585,42 @@ namespace dlib
     };
 
 
+    template <bool RScript>
+    class print_fhog_as_csv_helper;
 
+	class r_matrix_helper {
+	public:
+		r_matrix_helper(std::ostream& out_) :
+				out(out_) {
+		}
 
-    template <bool Verbose>
+		template<typename T>
+		r_matrix_helper& operator<<(const dlib::array2d<T>& m) {
+			print_fhog_as_csv_helper<true>(out) << m;
+			out << "), nrow = " << m.nr() << ", ncol = " << m.nc()
+					<< ", byrow = TRUE)" << std::endl;
+			return (*this);
+		}
+
+		r_matrix_helper& operator<<(std::string name) {
+			out << name.c_str() << "=matrix( c(";
+			return (*this);
+		}
+	private:
+		std::ostream& out;
+	};
+
+    class r_matrix_type {};
+    const r_matrix_type r_matrix      = r_matrix_type();
+    inline r_matrix_helper operator<< (
+        std::ostream& out,
+        const r_matrix_type&
+    )
+    {
+        return r_matrix_helper(out);
+    }
+
+    template <bool RScript>
     class print_fhog_as_csv_helper
     {
         /*!
@@ -601,32 +636,73 @@ namespace dlib
         std::ostream& operator<< (
             const dlib::array<array2d<T> >& feats
         );
+
+        template <typename T>
+        std::ostream& operator<< (
+            const dlib::array2d<T>& m);
+
     private:
         std::ostream& out;
     };
 
     template<>
     template <typename T>
-    std::ostream& print_fhog_as_csv_helper<true>::operator<< (
+     std::ostream& print_fhog_as_csv_helper<true>::operator<< (
          const dlib::array<array2d<T> >& feats
+     )
+     {
+      	for(int i=0;i<feats.size();++i)
+      	{
+      		out<<"feats."<<i<<"=matrix( c(";
+      		(*this)<<feats[i];
+      		out<<"), nrow = "<<feats[i].nr()<<", ncol = "<< feats[i].nc() <<", byrow = TRUE)"<<std::endl;
+      	}
+      	return out;
+     }
+
+    template<>
+    template <typename T>
+    std::ostream& print_fhog_as_csv_helper<true>::operator<< (
+        const dlib::array2d<T>& m
      )
      {
      	typedef typename array2d<T>::row row_type;
      	//std::cout<<"feats.size()="<<feats.size() << std::endl;
-     	for(int i=0;i<feats.size();++i)
+     	for(int k =0;k<m.nr();++k)
      	{
-     		//std::cout<<"feats["<<i<<"]="<<feats[i].nc()<<"x"<<feats[i].nr()<< std::endl;
-     		out<<"feats."<<i<<"=matrix( c(";
-     		for(int k =0;k<feats[i].nr();++k){
-     			row_type row = feats[i][k];
-     			for(int l=0;l<feats[i].nc();++l)
-     				if(k == (feats[i].nr()-1) && l == (feats[i].nc()-1))
-     					out<<row[l]<<" ";
-     				else
-     					out<<row[l]<<", ";
- 				out<<std::endl;
+     		row_type row = m[k];
+     		for(int l=0;l<m.nc();++l)
+     			if(k == (m.nr()-1) && l == (m.nc()-1))
+     				out<<row[l]<<" ";
+     			else
+     				out<<row[l]<<", ";
+ 			out<<std::endl;
+     	}
+         return out;
+     }
+
+    template<>
+    template <>
+    std::ostream& print_fhog_as_csv_helper<true>::operator<< (
+        const dlib::array2d<unsigned char>& m
+     )
+     {
+     	typedef typename array2d<unsigned char>::row row_type;
+     	//std::cout<<"feats.size()="<<feats.size() << std::endl;
+     	for(int k =0;k<m.nr();++k)
+     	{
+     		row_type row = m[k];
+     		for(int l=0;l<m.nc();++l)
+     		{
+     			unsigned char u8= row[l];
+     			unsigned int u16 =(unsigned int) u8;
+     			out<<u16;
+     			if(k == (m.nr()-1) && l == (m.nc()-1))
+     				out<<" ";
+     			else
+     				out<<", ";
      		}
-     		out<<"), nrow = "<<feats[i].nr()<<", ncol = "<< feats[i].nc() <<", byrow = TRUE)"<<std::endl;
+ 			out<<std::endl;
      	}
          return out;
      }
@@ -644,6 +720,13 @@ namespace dlib
         }
          return out;
      }
+
+    template<>
+    template <typename T>
+    std::ostream& print_fhog_as_csv_helper<false>::operator<< (
+        const dlib::array2d<T>& m
+     )
+     {}
 
     class print_fhog_short {};
     const print_fhog_short fhog_info      = print_fhog_short();
@@ -693,6 +776,7 @@ namespace dlib
         std::cout<<"filter_cols_padding: "<<filter_cols_padding<<std::endl;
         logFile rScript("fhog",img.nc(),img.nr());
         rScript<<fhog_csv<<feats;
+        rScript<<r_matrix<<"img"<<img;
         std::cout<<fhog_info<<feats;
         //std::cout<<"Press enter to continue.."<<std::endl;
         //std::cin.get();
