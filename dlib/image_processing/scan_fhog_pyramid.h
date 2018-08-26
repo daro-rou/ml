@@ -561,6 +561,29 @@ namespace dlib
     {
 
 
+    class logFile{
+    public:
+    	logFile (std::string filename):outfile(filename.c_str()){
+    	}
+    	logFile (std::string filename_, int x, int y){
+    		std::stringstream fileName(filename_,std::ios_base::out|std::ios_base::ate);
+    		fileName<<"_"<<x<<"x"<<y<<".R";
+    		outfile.open(fileName.str().c_str());
+    	}
+    	~logFile(){
+    		outfile.flush();
+    		outfile.close();
+    	}
+        inline  operator std::ostream& ()
+        {
+            return outfile;
+        }
+    private:
+    	std::ofstream outfile;
+    };
+
+
+
 
     template <bool Verbose>
     class print_fhog_as_csv_helper
@@ -593,14 +616,17 @@ namespace dlib
      	for(int i=0;i<feats.size();++i)
      	{
      		//std::cout<<"feats["<<i<<"]="<<feats[i].nc()<<"x"<<feats[i].nr()<< std::endl;
-     		out<<"feats."<<i<<"=[";
+     		out<<"feats."<<i<<"=matrix( c(";
      		for(int k =0;k<feats[i].nr();++k){
      			row_type row = feats[i][k];
      			for(int l=0;l<feats[i].nc();++l)
-     				out<<row[l]<<",";
+     				if(k == (feats[i].nr()-1) && l == (feats[i].nc()-1))
+     					out<<row[l]<<" ";
+     				else
+     					out<<row[l]<<", ";
  				out<<std::endl;
      		}
-     		out<<"]"<<std::endl;
+     		out<<"), nrow = "<<feats[i].nr()<<", ncol = "<< feats[i].nc() <<", byrow = TRUE)"<<std::endl;
      	}
          return out;
      }
@@ -640,6 +666,7 @@ namespace dlib
     }
 
 
+
     template <
         //typename pyramid_type,
         typename image_type
@@ -664,10 +691,11 @@ namespace dlib
         std::cout<<"cell_size: "<<cell_size<<std::endl;
         std::cout<<"filter_rows_padding: "<<filter_rows_padding<<std::endl;
         std::cout<<"filter_cols_padding: "<<filter_cols_padding<<std::endl;
-        //std::cout<<fhog_csv<<feats;
+        logFile rScript("fhog",img.nc(),img.nr());
+        rScript<<fhog_csv<<feats;
         std::cout<<fhog_info<<feats;
-        std::cout<<"Press enter to continue.."<<std::endl;
-        std::cin.get();
+        //std::cout<<"Press enter to continue.."<<std::endl;
+        //std::cin.get();
 
     }
 
