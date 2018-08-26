@@ -641,8 +641,17 @@ namespace dlib
         std::ostream& operator<< (
             const dlib::array2d<T>& m);
 
+
+        print_fhog_as_csv_helper<RScript>& operator<< (
+        	const std::string name_
+			)
+        {
+        	name=name_;
+        	return (*this);
+        }
     private:
         std::ostream& out;
+        mutable std::string name;
     };
 
     template<>
@@ -653,7 +662,7 @@ namespace dlib
      {
       	for(int i=0;i<feats.size();++i)
       	{
-      		out<<"feats."<<i<<"=matrix( c(";
+      		out<<name.c_str()<<"."<<i<<"=matrix( c(";
       		(*this)<<feats[i];
       		out<<"), nrow = "<<feats[i].nr()<<", ncol = "<< feats[i].nc() <<", byrow = TRUE)"<<std::endl;
       	}
@@ -775,7 +784,7 @@ namespace dlib
         std::cout<<"filter_rows_padding: "<<filter_rows_padding<<std::endl;
         std::cout<<"filter_cols_padding: "<<filter_cols_padding<<std::endl;
         logFile rScript("fhog",img.nc(),img.nr());
-        rScript<<fhog_csv<<feats;
+        rScript<<fhog_csv<<"feature"<<feats;
         rScript<<r_matrix<<"img"<<img;
         std::cout<<fhog_info<<feats;
         //std::cout<<"Press enter to continue.."<<std::endl;
