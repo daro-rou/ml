@@ -561,6 +561,85 @@ namespace dlib
     {
 
 
+
+    template <bool Verbose>
+    class print_fhog_as_csv_helper
+    {
+        /*!
+
+            In particular, this code allows you to write statements like:
+               std::cout<<fhog_csv<<feats;
+            and have it print with commas separating each element.
+        !*/
+    public:
+    	print_fhog_as_csv_helper (std::ostream& out_) : out(out_) {}
+
+        template <typename T>
+        std::ostream& operator<< (
+            const dlib::array<array2d<T> >& feats
+        );
+    private:
+        std::ostream& out;
+    };
+
+    template<>
+    template <typename T>
+    std::ostream& print_fhog_as_csv_helper<true>::operator<< (
+         const dlib::array<array2d<T> >& feats
+     )
+     {
+     	typedef typename array2d<T>::row row_type;
+     	//std::cout<<"feats.size()="<<feats.size() << std::endl;
+     	for(int i=0;i<feats.size();++i)
+     	{
+     		//std::cout<<"feats["<<i<<"]="<<feats[i].nc()<<"x"<<feats[i].nr()<< std::endl;
+     		out<<"feats."<<i<<"=[";
+     		for(int k =0;k<feats[i].nr();++k){
+     			row_type row = feats[i][k];
+     			for(int l=0;l<feats[i].nc();++l)
+     				out<<row[l]<<",";
+ 				out<<std::endl;
+     		}
+     		out<<"]"<<std::endl;
+     	}
+         return out;
+     }
+
+    template<>
+    template <typename T>
+    std::ostream& print_fhog_as_csv_helper<false>::operator<< (
+         const dlib::array<array2d<T> >& feats
+     )
+     {
+     	std::cout<<"feats.size()="<<feats.size() << std::endl;
+     	for(int i=0;i<feats.size();++i)
+     	{
+     		std::cout<<"feats["<<i<<"]="<<feats[i].nc()<<"x"<<feats[i].nr()<< std::endl;
+        }
+         return out;
+     }
+
+    class print_fhog_short {};
+    const print_fhog_short fhog_info      = print_fhog_short();
+    inline print_fhog_as_csv_helper<false> operator<< (
+        std::ostream& out,
+        const print_fhog_short&
+    )
+    {
+        return print_fhog_as_csv_helper<false>(out);
+    }
+
+    class print_fhog_verbose {};
+    const print_fhog_verbose fhog_csv      = print_fhog_verbose();
+    inline print_fhog_as_csv_helper<true> operator<< (
+        std::ostream& out,
+        const print_fhog_verbose&
+    )
+    {
+        return print_fhog_as_csv_helper<true>(out);
+    }
+
+
     template <
         //typename pyramid_type,
         typename image_type
@@ -571,6 +650,9 @@ namespace dlib
         ,const image_type& img
         ,const feature_extractor_type& fe
 		,dlib::array<array2d<float> >& feats
+		,int cell_size
+		,int filter_rows_padding
+		,int filter_cols_padding
 
     )
     {
@@ -578,7 +660,12 @@ namespace dlib
         win.set_image(img);
         print_matrix_as_csv csv;
         image_window winhog(draw_fhog(feats,7));
-        std::cout<<"Image size"<<img.nc()<<"x"<<img.nr()<<std::endl;
+        std::cout<<"Image size: "<<img.nc()<<"x"<<img.nr()<<std::endl;
+        std::cout<<"cell_size: "<<cell_size<<std::endl;
+        std::cout<<"filter_rows_padding: "<<filter_rows_padding<<std::endl;
+        std::cout<<"filter_cols_padding: "<<filter_cols_padding<<std::endl;
+        //std::cout<<fhog_csv<<feats;
+        std::cout<<fhog_info<<feats;
         std::cout<<"Press enter to continue.."<<std::endl;
         std::cin.get();
 
@@ -628,7 +715,7 @@ namespace dlib
 
             // build our feature pyramid
             fe(img, feats[0], cell_size,filter_rows_padding,filter_cols_padding);
-            show_image_(win,img, fe, feats[0]);
+            show_image_(win,img, fe, feats[0], cell_size,filter_rows_padding,filter_cols_padding);
             DLIB_ASSERT(feats[0].size() == fe.get_num_planes(), 
                 "Invalid feature extractor used with dlib::scan_fhog_pyramid.  The output does not have the \n"
                 "indicated number of planes.");
@@ -639,7 +726,7 @@ namespace dlib
                 array2d<pixel_type> temp1, temp2;
                 pyr(img, temp1);
                 fe(temp1, feats[1], cell_size,filter_rows_padding,filter_cols_padding);
-                show_image_(win,temp1, fe, feats[1]);
+                show_image_(win,temp1, fe, feats[1], cell_size,filter_rows_padding,filter_cols_padding);
 
                 swap(temp1,temp2);
 
@@ -647,7 +734,7 @@ namespace dlib
                 {
                     pyr(temp2, temp1);
                     fe(temp1, feats[i], cell_size,filter_rows_padding,filter_cols_padding);
-                    show_image_(win,temp1, fe, feats[i]);
+                    show_image_(win,temp1, fe, feats[i], cell_size,filter_rows_padding,filter_cols_padding);
                     swap(temp1,temp2);
                 }
             }
