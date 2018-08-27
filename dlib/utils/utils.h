@@ -67,8 +67,8 @@ class logFile{
 			return (*this);
 		}
 
-		r_matrix_helper& operator<<(std::string name) {
-			out << name.c_str() << "=matrix( c(";
+		r_matrix_helper& operator<<(std::string name_) {
+			name=name_;
 			return (*this);
 		}
 
@@ -78,11 +78,50 @@ class logFile{
 		        long num_cols
 		        >
 		r_matrix_helper& operator<<(const dlib::matrix<float,num_rows,num_cols>& m) {
+
+			out << name.c_str() << "=matrix( c(";
+			for(long k =0;k<num_rows;++k)
+				for(int l=0;l<num_cols;++l)
+			     			if(k == (num_rows-1) && l == (num_cols-1))
+			     				out<<m(k,l)<<" ";
+			     			else
+			     				out<<m(k,l)<<", ";
+			 out<<std::endl;
+			 out << "), nrow = " << num_rows << ", ncol = " << num_cols
+			 					<< ", byrow = TRUE)" << std::endl;
 			return (*this);
 		}
 
+		template <
+
+		        long num_rows,
+		        long num_cols
+		        >
+		r_matrix_helper& operator<<(
+					const dlib::array2d< dlib::matrix<float,num_rows,num_cols> >& m
+					)
+		{
+		     typedef typename dlib::array2d<dlib::matrix<float,num_rows,num_cols> >::row row_type;
+		     std::string tmp_name=name;
+
+		     for(int k =0;k<m.nr();++k)
+		     {
+		     	row_type row = m[k];
+		     	for(int l=0;l<m.nc();++l)
+		     	{
+		     		std::stringstream ss_name(tmp_name,std::ios_base::out|std::ios_base::ate);
+		     		ss_name<<"."<<k<<"."<<l;
+		     		name=ss_name.str();
+		     		(*this)<<row[l];
+		     	}
+		     }
+		     name=tmp_name;
+		     return (*this);
+		 }
+
 	private:
 		std::ostream& out;
+		std::string name;
 	};
 
     class r_matrix_type {};

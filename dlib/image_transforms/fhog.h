@@ -772,6 +772,9 @@ namespace dlib
             }
             //print_matrix_as_csv csv;
             // unit vectors used to compute gradient orientation
+
+             //rScript<<fhog_csv<<"feature"<<feats;
+
             matrix<float,2,1> directions[9];
             directions[0] =  1.0000, 0.0000; 
             directions[1] =  0.9397, 0.3420;
@@ -782,6 +785,14 @@ namespace dlib
             directions[6] = -0.5000, 0.8660;
             directions[7] = -0.7660, 0.6428;
             directions[8] = -0.9397, 0.3420;
+            {
+            	utils::logFile rScript("direction",img.nc(),img.nr());
+            	rScript<<utils::r_matrix<<"direction.0"<<directions[0];
+            	rScript<<utils::r_matrix<<"direction.1"<<directions[1];
+            	rScript<<utils::r_matrix<<"direction.2"<<directions[2];
+            	rScript<<utils::r_matrix<<"direction.3"<<directions[3];
+            }
+
             //for (int i=0;i<9;++i)
             //	std::cout<<csv<<directions[i];
 
@@ -964,7 +975,10 @@ namespace dlib
                     hist[iyp+1+1][ixp+1+1](best_o) += vy0*vx0*v;
                 }
             }
-
+            {
+            	utils::logFile rScript("histograms",img.nc(),img.nr());
+            	rScript<<utils::r_matrix<<"hist"<<hist;
+            }
             // compute energy in each block by summing over orientations
             for (int r = 0; r < cells_nr; ++r)
             {
