@@ -995,16 +995,7 @@ namespace dlib
                     hist[iyp+1+1][ixp+1+1](best_o) += vy0*vx0*v;
                 }
             }
-            {
-            	utils::logFile rScript("histograms",img.nc(),img.nr());
-            	dbg_fhog_params(rScript, img,cell_size,filter_rows_padding,filter_cols_padding);
-            	rScript<<utils::r_matrix<<"cells_nc"<<cells_nc;
-            	rScript<<utils::r_matrix<<"cells_nr"<<cells_nr;
-            	rScript<<utils::r_matrix<<"hog_nc"<<hog_nc;
-            	rScript<<utils::r_matrix<<"hog_nr"<<hog_nr;
-            	rScript<<utils::r_matrix<<"hist"<<hist;
 
-            }
             // compute energy in each block by summing over orientations
             for (int r = 0; r < cells_nr; ++r)
             {
@@ -1017,13 +1008,41 @@ namespace dlib
                 }
             }
 
+            {
+            	utils::logFile rScript("histograms",img.nc(),img.nr());
+            	dbg_fhog_params(rScript, img,cell_size,filter_rows_padding,filter_cols_padding);
+            	rScript<<utils::r_matrix<<"cells_nc"<<cells_nc;
+            	rScript<<utils::r_matrix<<"cells_nr"<<cells_nr;
+            	rScript<<utils::r_matrix<<"hog_nc"<<hog_nc;
+            	rScript<<utils::r_matrix<<"hog_nr"<<hog_nr;
+            	rScript<<utils::r_matrix<<"hist"<<hist;
+            	rScript<<"# Norm"<<std::endl;
+            	rScript<<utils::r_matrix<<"norm"<<norm;
+            }
+
+        	utils::logFile rScript("set_fhog",img.nc(),img.nr());
+        	dbg_fhog_params(rScript, img,cell_size,filter_rows_padding,filter_cols_padding);
+        	rScript<<utils::r_matrix<<"cells_nc"<<cells_nc;
+        	rScript<<utils::r_matrix<<"cells_nr"<<cells_nr;
+        	rScript<<utils::r_matrix<<"hog_nc"<<hog_nc;
+        	rScript<<utils::r_matrix<<"hog_nr"<<hog_nr;
+
+        	utils::logFile rScript1("set_fhog1",img.nc(),img.nr());
+        	dbg_fhog_params(rScript1, img,cell_size,filter_rows_padding,filter_cols_padding);
+        	rScript1<<utils::r_matrix<<"cells_nc"<<cells_nc;
+        	rScript1<<utils::r_matrix<<"cells_nr"<<cells_nr;
+        	rScript1<<utils::r_matrix<<"hog_nc"<<hog_nc;
+        	rScript1<<utils::r_matrix<<"hog_nr"<<hog_nr;
+
             const float eps = 0.0001;
             // compute features
             for (int y = 0; y < hog_nr; y++) 
             {
+            	rScript1<<"# y=" << y << " out of " << hog_nr <<std::endl;
                 const int yy = y+padding_rows_offset; 
                 for (int x = 0; x < hog_nc; x++) 
                 {
+                	rScript1<<"# x=" << x << " out of " << hog_nc <<std::endl;
                     const simd4f z1(norm[y+1][x+1],
                                     norm[y][x+1], 
                                     norm[y+1][x],  
@@ -1061,10 +1080,15 @@ namespace dlib
                         simd4f h1 = min(temp1,nn)*n;
                         simd4f h2 = min(temp2,nn)*n;
                         set_hog(hog,o,xx,yy,   sum(h0));
+                        rScript<<"# set_hog(hog,"<< o   << ","<< xx << "," << yy << ","<< sum(h0) << ")"<<std::endl;
                         set_hog(hog,o+1,xx,yy, sum(h1));
+                        rScript<<"# set_hog(hog,"<< o+1 << ","<< xx << "," << yy << ","<< sum(h1) << ")"<<std::endl;
                         set_hog(hog,o+2,xx,yy, sum(h2));
+                        rScript<<"# set_hog(hog,"<< o+2 << ","<< xx << "," << yy << ","<< sum(h2) << ")"<<std::endl;
                         t += h0+h1+h2;
                     }
+                    rScript1<<"# hist["<< x+1+1<<"]["<<y+1+1<<"(0 .. 17)"<<std::endl;
+                    rScript1<<"# set_hog(hog,o=[0 .. 17]," << xx << "," << yy <<  ")"<<std::endl;
 
                     t *= 2*0.2357;
 
@@ -1081,6 +1105,7 @@ namespace dlib
                         set_hog(hog,o+18+1,xx,yy, sum(h1));
                         set_hog(hog,o+18+2,xx,yy, sum(h2));
                     }
+                    rScript1<<"# set_hog(hog,o=[18 .. 26]," << xx << "," << yy <<  ")"<<std::endl;
 
 
                     float temp[4];
@@ -1091,6 +1116,7 @@ namespace dlib
                     set_hog(hog,28,xx,yy, temp[1]);
                     set_hog(hog,29,xx,yy, temp[2]);
                     set_hog(hog,30,xx,yy, temp[3]);
+                    rScript1<<"# set_hog(hog,o=[27 .. 30]," << xx << "," << yy <<  ")"<<std::endl;
                 }
             }
         }

@@ -45,6 +45,12 @@ class logFile{
         {
             return outfile;
         }
+        inline std::ostream& operator <<(const char* pzstr)
+        {
+        	outfile<<pzstr ;
+            return outfile;
+        }
+
     private:
     	std::ofstream outfile;
     };
@@ -61,6 +67,7 @@ class logFile{
 
 		template<typename T>
 		r_matrix_helper& operator<<(const dlib::array2d<T>& m) {
+			out << name.c_str() << "=matrix( c(";
 			print_fhog_as_csv_helper<true>(out) << m;
 			out << "), nrow = " << m.nr() << ", ncol = " << m.nc()
 					<< ", byrow = TRUE)" << std::endl;
