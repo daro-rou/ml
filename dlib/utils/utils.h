@@ -314,7 +314,13 @@ class logFile{
         std::cout<<"filter_cols_padding: "<<filter_cols_padding<<std::endl;
         logFile rScript("fhog",img.nc(),img.nr());
         rScript<<fhog_csv<<"feature"<<feats;
-        rScript<<r_matrix<<"img"<<img;
+        {
+
+			utils::logFile rScript("image",img.nc(),img.nr());
+    		std::stringstream name("img_",std::ios_base::out|std::ios_base::ate);
+    		name<<img.nc()<<"_"<<img.nr();
+        	rScript<<r_matrix<<name.str()<<img;
+        }
         std::cout<<fhog_info<<feats;
         //std::cout<<"Press enter to continue.."<<std::endl;
         //std::cin.get();
