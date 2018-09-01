@@ -119,6 +119,15 @@ class logFile{
 		     return (*this);
 		 }
 
+/*	template<
+		typename T
+		>
+	r_matrix_helper& operator<<(T numeric) {*/
+
+	r_matrix_helper& operator<<(int numeric) {
+		out << name.c_str() << "=" << numeric<< std::endl;
+	    return (*this);
+	 }
 	private:
 		std::ostream& out;
 		std::string name;

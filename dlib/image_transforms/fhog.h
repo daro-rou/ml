@@ -703,6 +703,26 @@ namespace dlib
         }
 
     // ------------------------------------------------------------------------------------
+        template <
+            typename image_type
+            >
+		 void dbg_fhog_params(
+				 std::ostream& out
+				 ,const image_type& img
+				 ,int cell_size
+				 ,int filter_rows_padding
+				 ,int filter_cols_padding
+
+		 )
+		 {
+			 out<<"#--------------"<<std::endl;
+			 out<<utils::r_matrix<<"img_nc"<<img.nc();
+			 out<<utils::r_matrix<<"img_nr"<<img.nr();
+			 out<<utils::r_matrix<<"cell_size"<<cell_size;
+			 out<<utils::r_matrix<<"filter_rows_padding"<<filter_rows_padding;
+			 out<<utils::r_matrix<<"filter_cols_padding"<<filter_cols_padding;
+			 out<<"#--------------"<<std::endl;
+		 }
 
         template <
             typename image_type, 
@@ -977,7 +997,13 @@ namespace dlib
             }
             {
             	utils::logFile rScript("histograms",img.nc(),img.nr());
+            	dbg_fhog_params(rScript, img,cell_size,filter_rows_padding,filter_cols_padding);
+            	rScript<<utils::r_matrix<<"cells_nc"<<cells_nc;
+            	rScript<<utils::r_matrix<<"cells_nr"<<cells_nr;
+            	rScript<<utils::r_matrix<<"hog_nc"<<hog_nc;
+            	rScript<<utils::r_matrix<<"hog_nr"<<hog_nr;
             	rScript<<utils::r_matrix<<"hist"<<hist;
+
             }
             // compute energy in each block by summing over orientations
             for (int r = 0; r < cells_nr; ++r)
