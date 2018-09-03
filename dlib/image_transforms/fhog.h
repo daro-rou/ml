@@ -1071,6 +1071,7 @@ namespace dlib
                     const int xx = x+padding_cols_offset; 
 
                     // contrast-sensitive features
+                    rScript1<<"## contrast-sensitive features"<<std::endl;
                     for (int o = 0; o < 18; o+=3) 
                     {
                         simd4f temp0(hist[y+1+1][x+1+1](o));
@@ -1087,12 +1088,13 @@ namespace dlib
                         rScript<<"# set_hog(hog,"<< o+2 << ","<< xx << "," << yy << ","<< sum(h2) << ")"<<std::endl;
                         t += h0+h1+h2;
                     }
-                    rScript1<<"# hist["<< x+1+1<<"]["<<y+1+1<<"(0 .. 17)"<<std::endl;
+                    rScript1<<"# uses hist["<< x+1+1<<"]["<<y+1+1<<"](0 .. 17)"<<std::endl;
                     rScript1<<"# set_hog(hog,o=[0 .. 17]," << xx << "," << yy <<  ")"<<std::endl;
 
                     t *= 2*0.2357;
 
                     // contrast-insensitive features
+                    rScript1<<"## contrast-insensitive features"<<std::endl;
                     for (int o = 0; o < 9; o+=3) 
                     {
                         simd4f temp0 = hist[y+1+1][x+1+1](o)   + hist[y+1+1][x+1+1](o+9);
@@ -1112,6 +1114,7 @@ namespace dlib
                     t.store(temp);
 
                     // texture features
+                    rScript1<<"## texture features"<<std::endl;
                     set_hog(hog,27,xx,yy, temp[0]);
                     set_hog(hog,28,xx,yy, temp[1]);
                     set_hog(hog,29,xx,yy, temp[2]);
