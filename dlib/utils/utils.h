@@ -3,7 +3,7 @@
 #define DLIB_SCAN_fHOG_UTILS_Hh_
 
 #include "../matrix.h"
-#include "../image_transforms.h"
+//#include "../image_transforms.h"
 #include "../array.h"
 #include "../array2d.h"
 //#include "object_detector.h"

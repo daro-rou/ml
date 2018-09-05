@@ -9,6 +9,8 @@
 #include "box_overlap_testing.h"
 #include "full_object_detection.h"
 
+#include "../utils/utils.h"
+
 namespace dlib
 {
 
@@ -430,6 +432,16 @@ namespace dlib
         double adjust_threshold
     )
     {
+    	utils::logFile rScript("object_detector_functor",img.nc(),img.nr());
+    	//dbg_fhog_params(rScript, img,cell_size,filter_rows_padding,filter_cols_padding);
+		/*rScript<<utils::r_matrix<<"cells_nc"<<cells_nc;
+		rScript<<utils::r_matrix<<"cells_nr"<<cells_nr;
+		rScript<<utils::r_matrix<<"hog_nc"<<hog_nc;
+		rScript<<utils::r_matrix<<"hog_nr"<<hog_nr;
+		rScript<<utils::r_matrix<<"hist"<<hist;
+		rScript<<"# Norm"<<std::endl;
+		rScript<<utils::r_matrix<<"norm"<<norm;
+    	 */
         scanner.load(img);
         std::vector<std::pair<double, rectangle> > dets;
         std::vector<rect_detection> dets_accum;
