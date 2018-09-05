@@ -12,19 +12,35 @@
 #include <dlib/image_io.h>
 #include <iostream>
 
+
+//forward declaration
+namespace dlib{
+	template<typename T>
+	struct processed_weight_vector;
+
+    template <
+        typename Pyramid_type,
+        typename Feature_extractor_type
+        >
+    class scan_fhog_pyramid;
+
+	template <
+	    typename T,
+	    typename mm1,
+	    typename mm2
+	    >
+	dlib::matrix<unsigned char> draw_fhog(
+	    const dlib::array<dlib::array2d<T,mm1>,mm2>& hog,
+	    const long cell_draw_size = 15,
+	    const float min_response_threshold = 0.0
+	);
+
+}
+
 namespace utils{
 
 
-template <
-    typename T,
-    typename mm1,
-    typename mm2
-    >
-dlib::matrix<unsigned char> draw_fhog(
-    const dlib::array<dlib::array2d<T,mm1>,mm2>& hog,
-    const long cell_draw_size = 15,
-    const float min_response_threshold = 0.0
-);
+
 
 class logFile{
     public:
@@ -135,6 +151,54 @@ class logFile{
 		out << name.c_str() << "=" << numeric<< std::endl;
 	    return (*this);
 	 }
+
+	template<typename T>
+	r_matrix_helper& operator<<(const std::vector<dlib::processed_weight_vector<T> >& w)
+	{
+		out << name.c_str()<<".size=" <<w.size()<< std::endl;
+		std::string tmp_name=name;
+		for(int i=0;i<w.size();++i){
+     		std::stringstream w_name(tmp_name,std::ios_base::out|std::ios_base::ate);
+     		w_name<<i;
+     		name=w_name.str();
+     		(*this)<<w[i];
+		}
+		 name=tmp_name;
+		return (*this);
+	}
+
+	template<typename T>
+	r_matrix_helper& operator<<(const dlib::processed_weight_vector<T > & a)
+	{
+		(*this)<<a.w;
+		return (*this);
+	}
+
+
+	 template <
+	        typename Pyramid_type,
+	        typename feature_extractor_type
+	        >
+	r_matrix_helper& operator<<(
+			const dlib::processed_weight_vector<dlib::scan_fhog_pyramid<Pyramid_type,feature_extractor_type> >&a
+			)
+	{
+
+	 		typedef typename dlib::scan_fhog_pyramid<Pyramid_type,feature_extractor_type>::fhog_filterbank fhog_filterbank;
+	 		out << name.c_str()<<".w.size="<<a.w.size()<< std::endl;
+	 		out << name.c_str()<<".w.nr="<<a.w.nr()<< std::endl;
+	 		out << name.c_str()<<".w.nc="<<a.w.nc()<< std::endl;
+	 		fhog_filterbank fb= a.get_detect_argument();
+	 		out << name.c_str()<<".fb.num_dimensions="<<fb.get_num_dimensions()<< std::endl;
+	 		out << name.c_str()<<".fb.num_separable_filters="<<fb.num_separable_filters() << std::endl;
+	 		return (*this);
+	}
+	 r_matrix_helper& operator<<(const dlib::matrix<double,0,1> &m)
+	{
+		long index=0;
+		out << name.c_str() << "=" << m(index)<<std::endl;
+		return (*this);
+	}
 	private:
 		std::ostream& out;
 		std::string name;

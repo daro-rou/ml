@@ -442,13 +442,19 @@ namespace dlib
 		rScript<<"# Norm"<<std::endl;
 		rScript<<utils::r_matrix<<"norm"<<norm;
     	 */
+    	rScript<<"#1. scanner.load(img)"<<std::endl;
         scanner.load(img);
         std::vector<std::pair<double, rectangle> > dets;
         std::vector<rect_detection> dets_accum;
+        rScript<<utils::r_matrix<<"object_detector.w"<<w;
+        rScript<<utils::r_matrix<<"scanner.get_num_dimensions"<<scanner.get_num_dimensions();
         for (unsigned long i = 0; i < w.size(); ++i)
         {
+        	rScript<<"#     object_detector.w[" << i << "] out of " <<w.size() <<std::endl;
             const double thresh = w[i].w(scanner.get_num_dimensions());
+            rScript<<"#         thresh="<<thresh<<std::endl;
             scanner.detect(w[i].get_detect_argument(), dets, thresh + adjust_threshold);
+            rScript<<"#         scanner.detect()"<<std::endl;
             for (unsigned long j = 0; j < dets.size(); ++j)
             {
                 rect_detection temp;
