@@ -425,6 +425,7 @@ namespace dlib
             array2d<float>& saliency_image
         )
         {
+        	LOG_CALL_STACK()
             const unsigned long num_separable_filters = w.num_separable_filters();
             rectangle area;
             // use the separable filters if they would be faster than running the regular filters.
@@ -796,6 +797,13 @@ namespace dlib
             std::vector<std::pair<double, rectangle> >& dets
         ) 
         {
+        	utils::call_stack<<"#>>  "<<__FILE__<<":"<<__LINE__<<"  "<< __PRETTY_FUNCTION__<<std::endl;
+        	utils::call_stack<<utils::r_matrix<<"thresh"<<thresh;
+        	utils::call_stack<<utils::r_matrix<<"det_box_height"<<det_box_height;
+        	utils::call_stack<<utils::r_matrix<<"det_box_width"<<det_box_width;
+        	utils::call_stack<<utils::r_matrix<<"cell_size"<<cell_size;
+        	utils::call_stack<<utils::r_matrix<<"filter_rows_padding"<<filter_rows_padding;
+        	utils::call_stack<<utils::r_matrix<<"filter_cols_padding"<<filter_cols_padding;
             dets.clear();
 
             array2d<float> saliency_image;
@@ -805,7 +813,6 @@ namespace dlib
             for (unsigned long l = 0; l < feats.size(); ++l)
             {
                 const rectangle area = apply_filters_to_fhog(w, feats[l], saliency_image);
-
                 // now search the saliency image for any detections
                 for (long r = area.top(); r <= area.bottom(); ++r)
                 {
@@ -818,12 +825,18 @@ namespace dlib
                                 cell_size, filter_rows_padding, filter_cols_padding);
                             rect = pyr.rect_up(rect, l);
                             dets.push_back(std::make_pair(saliency_image[r][c], rect));
+                            utils::call_stack<<utils::r_matrix<<"level"<<l;
+                            utils::call_stack<<utils::r_matrix<<"saliency_image"<<saliency_image;
+                            utils::call_stack<<utils::r_matrix<<"area"<<area;
+                            utils::call_stack<<utils::r_matrix<<"detection"<<rect;
                         }
                     }
                 }
             }
 
             std::sort(dets.rbegin(), dets.rend(), compare_pair_rect);
+            utils::call_stack<<utils::r_matrix<<"dets"<<dets;
+            utils::call_stack<<"#<<  "<<__FILE__<<":"<<__LINE__<<"  "<< __PRETTY_FUNCTION__<<std::endl;
         }
 
         inline bool overlaps_any_box (
@@ -870,6 +883,7 @@ namespace dlib
 
         unsigned long width, height;
         compute_fhog_window_size(width,height);
+        utils::call_stack<<"#"<<__FILE__<<":"<<__LINE__<<"  "<< __PRETTY_FUNCTION__<<std::endl;
 
         impl::detect_from_fhog_pyramid<pyramid_type>(feats, fe, w, thresh,
             height-2*padding, width-2*padding, cell_size, height, width, dets);

@@ -272,6 +272,7 @@ namespace dlib
         bool add_to = false
     )
     {
+    	//LOG_CALL_STACK()
         if (use_abs == false)
         {
             if (scale == 1)
@@ -304,6 +305,7 @@ namespace dlib
         bool add_to = false
     )
     {
+    	//LOG_CALL_STACK()
         return impl::grayscale_spatially_filter_image(in_img,out_img,filter,scale,use_abs,add_to);
     }
 
@@ -568,6 +570,7 @@ namespace dlib
         bool add_to = false
     )
     {
+//    	LOG_CALL_STACK()
         // You can only use this function with images and filters containing float
         // variables.
         COMPILE_TIME_ASSERT((is_float_filtering<in_image_type,out_image_type,EXP1,EXP2>::value == true));

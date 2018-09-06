@@ -432,6 +432,7 @@ namespace dlib
         double adjust_threshold
     )
     {
+    	LOG_CALL_STACK()
     	utils::logFile rScript("object_detector_functor",img.nc(),img.nr());
     	//dbg_fhog_params(rScript, img,cell_size,filter_rows_padding,filter_cols_padding);
 		/*rScript<<utils::r_matrix<<"cells_nc"<<cells_nc;

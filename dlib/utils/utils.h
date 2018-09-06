@@ -13,6 +13,7 @@
 #include <iostream>
 
 
+#define LOG_CALL_STACK()	 utils::call_stack<<"#  "<<__FILE__<<":"<<__LINE__<<"  "<< __PRETTY_FUNCTION__<<std::endl;
 //forward declaration
 namespace dlib{
 	template<typename T>
@@ -44,7 +45,7 @@ namespace utils{
 
 class logFile{
     public:
-    	logFile (std::string& filename):outfile(filename.c_str()){
+    	logFile (std::string filename):outfile(filename.c_str()){
     	}
        	logFile (const char* filename):outfile(filename){
         	}
@@ -61,7 +62,7 @@ class logFile{
         {
             return outfile;
         }
-        inline std::ostream& operator <<(const char* pzstr)
+        inline std::ostream& operator <<(const char pzstr[2])
         {
         	outfile<<pzstr ;
             return outfile;
@@ -71,6 +72,7 @@ class logFile{
     	std::ofstream outfile;
     };
 
+   logFile call_stack("call_stack.R");
 
     template <bool RScript>
     class print_fhog_as_csv_helper;
@@ -96,21 +98,21 @@ class logFile{
 		}
 
 		template <
-
+				typename T,
 		        long num_rows,
 		        long num_cols
 		        >
-		r_matrix_helper& operator<<(const dlib::matrix<float,num_rows,num_cols>& m) {
+		r_matrix_helper& operator<<(const dlib::matrix<T,num_rows,num_cols>& m) {
 
 			out << name.c_str() << "=matrix( c(";
-			for(long k =0;k<num_rows;++k)
-				for(int l=0;l<num_cols;++l)
-			     			if(k == (num_rows-1) && l == (num_cols-1))
+			for(long k =0;k<m.nr();++k)
+				for(int l=0;l<m.nc();++l)
+			     			if(k == (m.nr()-1) && l == (m.nc()-1))
 			     				out<<m(k,l)<<" ";
 			     			else
 			     				out<<m(k,l)<<", ";
 			 out<<std::endl;
-			 out << "), nrow = " << num_rows << ", ncol = " << num_cols
+			 out << "), nrow = " << m.nr() << ", ncol = " << m.nc()
 			 					<< ", byrow = TRUE)" << std::endl;
 			return (*this);
 		}
@@ -142,12 +144,21 @@ class logFile{
 		     return (*this);
 		 }
 
-/*	template<
-		typename T
-		>
-	r_matrix_helper& operator<<(T numeric) {*/
 
-	r_matrix_helper& operator<<(int numeric) {
+	r_matrix_helper& operator<<(long unsigned int numeric) {
+		out << name.c_str() << "=" << numeric<< std::endl;
+	    return (*this);
+	 }
+
+	r_matrix_helper& operator<<(long  int numeric) {
+		out << name.c_str() << "=" << numeric<< std::endl;
+	    return (*this);
+	 }
+	r_matrix_helper& operator<<( int numeric) {
+		out << name.c_str() << "=" << numeric<< std::endl;
+	    return (*this);
+	 }
+	r_matrix_helper& operator<<(double numeric) {
 		out << name.c_str() << "=" << numeric<< std::endl;
 	    return (*this);
 	 }
@@ -188,17 +199,62 @@ class logFile{
 	 		out << name.c_str()<<".w.size="<<a.w.size()<< std::endl;
 	 		out << name.c_str()<<".w.nr="<<a.w.nr()<< std::endl;
 	 		out << name.c_str()<<".w.nc="<<a.w.nc()<< std::endl;
+	 		{
+	 			std::string tmp_name=name;
+	 			std::stringstream w_name(tmp_name,std::ios_base::out|std::ios_base::ate);
+	 			w_name<<".w";
+	 			name=w_name.str();
+	 			(*this)<<a.w;
+	 			name=tmp_name;
+	 		}
 	 		fhog_filterbank fb= a.get_detect_argument();
 	 		out << name.c_str()<<".fb.num_dimensions="<<fb.get_num_dimensions()<< std::endl;
 	 		out << name.c_str()<<".fb.num_separable_filters="<<fb.num_separable_filters() << std::endl;
 	 		return (*this);
 	}
-	 r_matrix_helper& operator<<(const dlib::matrix<double,0,1> &m)
+
+	r_matrix_helper& operator<<(const  std::vector<std::pair<double, dlib::rectangle> >& dets )
 	{
-		long index=0;
-		out << name.c_str() << "=" << m(index)<<std::endl;
+		 if(dets.size()==0){
+			 out << name.c_str()<<".size=0"<<std::endl;
+			 return (*this);
+		 }
+		out << name.c_str()<<".saliency= c(";
+		 for(int i=0;i<dets.size();++i){
+  			if(i == (dets.size()-1))
+  				out<<dets[i].first<<" ";
+  			else
+  				out<<dets[i].first<<", ";
+		 }
+		 out<<std::endl<< ")" << std::endl;
+		 //rectangles
+		 if(dets.size())
+			 out << name.c_str()<<".rect= c(";
+		 name.clear();
+		 for(int i=0;i<dets.size();++i){
+			 (*this)<<dets[i].second;
+	 		  if(i == (dets.size()-1))
+	  			out<<" ";
+	 		  else
+	  			out<<", ";
+		 }
+		 out<<std::endl<< ")" << std::endl;
+
+		 return (*this);
+	}
+
+	r_matrix_helper& operator<<(const dlib::rectangle& rect )
+	{
+		if(name.size()>1){
+			out << name.c_str() << "=";
+		}
+		out << "c( "<<rect.left() << ", " << rect.bottom() <<", "<<rect.right() <<", "<<rect.top()<<")";
+		if(name.size()){
+			out<< std::endl;
+		}
 		return (*this);
 	}
+
 	private:
 		std::ostream& out;
 		std::string name;
