@@ -610,6 +610,7 @@ namespace dlib
             // build our feature pyramid
             fe(img, feats[0], cell_size,filter_rows_padding,filter_cols_padding);
             utils::show_image_(win,img, fe, feats[0], cell_size,filter_rows_padding,filter_cols_padding);
+            utils::call_stack<<"#Image size:  "<<img.nc()<<"x"<<img.nr()<<" level: 0"<<std::endl;
             DLIB_ASSERT(feats[0].size() == fe.get_num_planes(), 
                 "Invalid feature extractor used with dlib::scan_fhog_pyramid.  The output does not have the \n"
                 "indicated number of planes.");
@@ -620,6 +621,7 @@ namespace dlib
                 array2d<pixel_type> temp1, temp2;
                 pyr(img, temp1);
                 fe(temp1, feats[1], cell_size,filter_rows_padding,filter_cols_padding);
+                utils::call_stack<<"#Image size:  "<<temp1.nc()<<"x"<<temp1.nr()<<" level: 1"<<std::endl;
                 utils::show_image_(win,temp1, fe, feats[1], cell_size,filter_rows_padding,filter_cols_padding);
 
                 swap(temp1,temp2);
@@ -628,6 +630,7 @@ namespace dlib
                 {
                     pyr(temp2, temp1);
                     fe(temp1, feats[i], cell_size,filter_rows_padding,filter_cols_padding);
+                    utils::call_stack<<"#Image size:  "<<temp1.nc()<<"x"<<temp1.nr()<<" level: "<<i<<std::endl;
                     utils::show_image_(win,temp1, fe, feats[i], cell_size,filter_rows_padding,filter_cols_padding);
                     swap(temp1,temp2);
                 }
@@ -809,9 +812,12 @@ namespace dlib
             array2d<float> saliency_image;
             pyramid_type pyr;
 
+            std::vector<std::pair<double, rectangle> > level_dets;
             // for all pyramid levels
             for (unsigned long l = 0; l < feats.size(); ++l)
             {
+            	utils::call_stack<<utils::r_matrix<<"level"<<l;
+            	level_dets.clear();
                 const rectangle area = apply_filters_to_fhog(w, feats[l], saliency_image);
                 // now search the saliency image for any detections
                 for (long r = area.top(); r <= area.bottom(); ++r)
@@ -825,12 +831,20 @@ namespace dlib
                                 cell_size, filter_rows_padding, filter_cols_padding);
                             rect = pyr.rect_up(rect, l);
                             dets.push_back(std::make_pair(saliency_image[r][c], rect));
-                            utils::call_stack<<utils::r_matrix<<"level"<<l;
-                            utils::call_stack<<utils::r_matrix<<"saliency_image"<<saliency_image;
-                            utils::call_stack<<utils::r_matrix<<"area"<<area;
-                            utils::call_stack<<utils::r_matrix<<"detection"<<rect;
+                            rect = pyr.rect_down(rect, l-1);
+                            level_dets.push_back(std::make_pair(saliency_image[r][c], rect));
                         }
                     }
+                }
+                if(level_dets.size()){
+
+                    utils::call_stack<<utils::r_matrix<<"saliency_image"<<saliency_image;
+                    utils::call_stack<<utils::r_matrix<<"area"<<area;
+                    std::sort(level_dets.rbegin(), level_dets.rend(), compare_pair_rect);
+                    std::stringstream name("level_detections",std::ios_base::out|std::ios_base::ate);
+                    name<<"."<<l;
+                    utils::call_stack<<utils::r_matrix<<name.str().c_str()<<level_dets;
+
                 }
             }
 

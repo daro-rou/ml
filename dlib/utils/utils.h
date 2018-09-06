@@ -229,7 +229,7 @@ class logFile{
 		 out<<std::endl<< ")" << std::endl;
 		 //rectangles
 		 if(dets.size())
-			 out << name.c_str()<<".rect= c(";
+			 out << name.c_str()<<".rect= list(";
 		 name.clear();
 		 for(int i=0;i<dets.size();++i){
 			 (*this)<<dets[i].second;
@@ -428,6 +428,7 @@ class logFile{
         win.clear_overlay();
         win.set_image(img);
 //        dlib::image_window winhog(draw_fhog(feats,7));
+       // call_stack<<"#Image size:  "<<img.nc()<<"x"<<img.nr()<<std::endl;
         std::cout<<"Image size: "<<img.nc()<<"x"<<img.nr()<<std::endl;
         std::cout<<"cell_size: "<<cell_size<<std::endl;
         std::cout<<"filter_rows_padding: "<<filter_rows_padding<<std::endl;
@@ -441,7 +442,7 @@ class logFile{
     		name<<img.nc()<<"_"<<img.nr();
         	rScript<<r_matrix<<name.str()<<img;
         }
-        std::cout<<fhog_info<<feats;
+        //std::cout<<fhog_info<<feats;
         //std::cout<<"Press enter to continue.."<<std::endl;
         //std::cin.get();
 
