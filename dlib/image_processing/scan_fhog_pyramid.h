@@ -829,10 +829,9 @@ namespace dlib
                         {
                             rectangle rect = fe.feats_to_image(centered_rect(point(c,r),det_box_width,det_box_height), 
                                 cell_size, filter_rows_padding, filter_cols_padding);
+                            level_dets.push_back(std::make_pair(saliency_image[r][c], rect));
                             rect = pyr.rect_up(rect, l);
                             dets.push_back(std::make_pair(saliency_image[r][c], rect));
-                            rect = pyr.rect_down(rect, l-1);
-                            level_dets.push_back(std::make_pair(saliency_image[r][c], rect));
                         }
                     }
                 }
@@ -844,7 +843,6 @@ namespace dlib
                     std::stringstream name("level_detections",std::ios_base::out|std::ios_base::ate);
                     name<<"."<<l;
                     utils::call_stack<<utils::r_matrix<<name.str().c_str()<<level_dets;
-
                 }
             }
 
