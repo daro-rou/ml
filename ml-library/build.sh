@@ -1,10 +1,10 @@
 #!/bin/bash
 
 
-CMAKE_DIR=`pwd`/../cmake-3.12.0-Linux-x86_64/bin
-echo CMAKE_DIR=$CMAKE_DIR
+#CMAKE_DIR=`pwd`/../cmake-3.12.0-Linux-x86_64/bin
+#echo CMAKE_DIR=$CMAKE_DIR
 BUILD_DIR=$(pwd)/build
-export PATH=${CMAKE_DIR}:$PATH
+#export PATH=${CMAKE_DIR}:$PATH
 #mkdir build
 #cd make
 if [  -d "${BUILD_DIR}" ]; 

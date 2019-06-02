@@ -50,7 +50,8 @@
 using namespace dlib;
 using namespace std;
 #define SHOW_IMG	1
-const char pShapePredictor[] = "/home/dan/eclipse-workspace/dlibExample/shape_predictor_68_face_landmarks.dat";
+#define SHOW_FHOG_FEATURE 1
+const char pShapePredictor[] = "./shape_predictor_68_face_landmarks.dat";
 /**
 **You can get the shape_predictor_68_face_landmarks.dat file from:
 ** "http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2"
@@ -106,7 +107,7 @@ int main(int argc, char** argv)
 			// upsample the image we make the detector run slower since it must
 			// process a larger image.
 			// pyramid_up(img);
-#if defined (SHOW_FHOG_FEATURE)
+#if defined (SHOW_FHOG_FEATURE_I)
 			//fhog fetature
 			array2d<matrix<float, 31, 1> > fhog;
 			//extract the fhog feature
